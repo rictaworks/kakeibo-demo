@@ -1,0 +1,16 @@
+# 管理対象外ディレクトリ
+.claude/
+TASKS/
+DEBUG/
+CLIENT/
+WORK/
+ENV/
+DELETE/
+
+# 管理対象外ファイル（SPEC内）
+SPEC/kakeibo-demo-spec.md
+
+# 管理対象外ファイル
+.env
+.env.*
+!.env.example
