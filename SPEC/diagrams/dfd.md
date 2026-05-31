@@ -6,47 +6,53 @@
 
 ```mermaid
 graph LR
-    User((ユーザー))
-    Google((Google))
+    User((匿名ユーザー))
+    Scheduler((APScheduler))
     System[kakeibo-demo]
 
-    User -->|ログイン・収支入力| System
-    System -->|レポート・収支一覧| User
-    System -->|OAuth リクエスト| Google
-    Google -->|認証情報| System
+    User -->|レシート画像・支出入力| System
+    System -->|OCR結果・集計・節約提案| User
+    Scheduler -->|JST 03:00 リセット指示| System
 ```
 
 ## レベル1（主要プロセス）
 
 ```mermaid
 graph TD
-    User((ユーザー))
+    User((匿名ユーザー))
+    Scheduler((APScheduler))
 
-    P1[認証処理]
-    P2[収支管理]
-    P3[カテゴリ管理]
-    P4[レポート生成]
+    P1[セッション管理]
+    P2[画像検証・OCR処理]
+    P3[ルールベース分類]
+    P4[支出CRUD]
+    P5[集計・節約提案]
+    P6[DBリセット]
 
-    DS1[(users)]
-    DS2[(transactions)]
+    DS1[(sessions)]
+    DS2[(expenses)]
     DS3[(categories)]
 
-    User -->|ログイン情報| P1
-    P1 -->|ユーザー情報| DS1
-    DS1 -->|認証済みユーザー| P1
-    P1 -->|JWT| User
+    User -->|Cookie| P1
+    P1 -->|セッションID| DS1
+    DS1 -->|有効性確認| P1
+    P1 -->|認証済みセッションID| P2
 
-    User -->|収支データ| P2
-    P2 -->|保存| DS2
-    DS2 -->|収支一覧| P2
-    P2 -->|収支一覧| User
+    User -->|レシート画像| P2
+    P2 -->|OCRテキスト・金額・日付・店舗名| P3
+    DS3 -->|キーワードマスタ| P3
+    P3 -->|カテゴリID・信頼度| User
 
-    User -->|カテゴリ情報| P3
-    P3 -->|保存| DS3
-    DS3 -->|カテゴリ一覧| P3
-    P3 -->|カテゴリ一覧| User
+    User -->|支出データ確認| P4
+    P4 -->|INSERT / UPDATE / DELETE| DS2
+    DS2 -->|支出一覧| P4
+    P4 -->|支出一覧| User
 
-    DS2 -->|集計対象| P4
-    DS3 -->|カテゴリ情報| P4
-    P4 -->|月次・年次レポート| User
+    DS2 -->|集計対象| P5
+    DS3 -->|カテゴリ情報| P5
+    P5 -->|月別・カテゴリ別・日別・節約提案| User
+
+    Scheduler -->|JST 03:00| P6
+    P6 -->|DELETE sessions / expenses + VACUUM| DS1
+    P6 -->|DELETE sessions / expenses + VACUUM| DS2
 ```

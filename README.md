@@ -1,87 +1,68 @@
 # kakeibo-demo
 
-家計簿管理アプリのデモプロジェクト。収支の記録・カテゴリ管理・月次レポートを提供する。
+レシート撮影だけで自動分類・節約提案するAI家計簿のデモアプリ。
+
+> **デモ版制約**: 外部API不使用・認証なし・SQLite（毎日JST 03:00自動リセット）
 
 ## 技術スタック
 
-- フロントエンド: Next.js (Vercel)
-- バックエンド: Ruby on Rails API (Render/Railway)
-- データベース: PostgreSQL
-- 認証: Google OAuth 2.0
-- アイコン: FontAwesome
-- テスト: RSpec / Jest / Playwright
+| 層 | 技術 | 備考 |
+|---|---|---|
+| フロントエンド | Next.js 14 (TypeScript) | Vercel（無料） |
+| バックエンドAPI | FastAPI (Python) | Render（無料） |
+| OCR処理 | pytesseract + OpenCV | ローカル処理、外部API不使用 |
+| データベース | SQLite | 毎日JST 03:00 自動リセット |
+| スケジューラー | APScheduler | FastAPI内で動作 |
+| スタイリング | Tailwind CSS | |
+| グラフ | Chart.js + react-chartjs-2 | |
+| アイコン | FontAwesome | |
+| テスト | pytest / Jest | |
 
 ---
 
-## 自動ログイン（開発環境）
+## 画面一覧
 
-開発環境では認証をバイパスして自動ログイン状態になる。
-
-```bash
-# .env に以下を設定
-RAILS_ENV=development
-AUTO_LOGIN_USER_EMAIL=dev@example.com
-```
-
-`RAILS_ENV=development` のとき、バックエンドは認証済みユーザー（`AUTO_LOGIN_USER_EMAIL`）として扱う。
-フロントエンドは `NODE_ENV=development` のとき、ログイン画面をスキップしてダッシュボードへリダイレクトする。
-
----
-
-## ページ一覧
-
-| ページ名 | URL |
-|---|---|
-| [ログイン](http://localhost:3000/login) | /login |
-| [ダッシュボード](http://localhost:3000/) | / |
-| [収支一覧](http://localhost:3000/transactions) | /transactions |
-| [収支登録](http://localhost:3000/transactions/new) | /transactions/new |
-| [収支詳細](http://localhost:3000/transactions/:id) | /transactions/:id |
-| [収支編集](http://localhost:3000/transactions/:id/edit) | /transactions/:id/edit |
-| [カテゴリ管理](http://localhost:3000/categories) | /categories |
-| [月次レポート](http://localhost:3000/reports/monthly) | /reports/monthly |
-| [年次レポート](http://localhost:3000/reports/yearly) | /reports/yearly |
-| [設定](http://localhost:3000/settings) | /settings |
+| 画面名 | URL | 説明 |
+|---|---|---|
+| ダッシュボード | `/` | 月別集計・グラフ・節約提案・支出一覧 |
+| レシートアップロード | `/upload` | 撮影→OCR→確認→保存 / 手動入力 |
 
 ---
 
 ## API一覧
 
-仕様書: [SPEC/api/](./SPEC/api/)
+Base URL: `http://localhost:8000`
 
-### 認証
+### セッション
 
-| タイトル | エンドポイントURL |
-|---|---|
-| Google ログイン開始 | `GET /api/v1/auth/google` |
-| Google OAuth コールバック | `GET /api/v1/auth/google/callback` |
-| ログアウト | `DELETE /api/v1/auth/sessions` |
-| ログインユーザー取得 | `GET /api/v1/auth/me` |
+セッションはCookieで自動管理される。初回アクセス時にサーバーが自動発行。認証不要。
 
-### 収支（Transactions）
+### レシートアップロード
 
-| タイトル | エンドポイントURL |
-|---|---|
-| 収支一覧取得 | `GET /api/v1/transactions` |
-| 収支登録 | `POST /api/v1/transactions` |
-| 収支詳細取得 | `GET /api/v1/transactions/:id` |
-| 収支更新 | `PUT /api/v1/transactions/:id` |
+| メソッド | エンドポイント | 説明 |
+|---|---|---|
+| `POST` | `/api/receipts/upload` | OCR処理・自動分類 |
 
-### カテゴリ（Categories）
+### 支出 (Expenses)
 
-| タイトル | エンドポイントURL |
-|---|---|
-| カテゴリ一覧取得 | `GET /api/v1/categories` |
-| カテゴリ登録 | `POST /api/v1/categories` |
-| カテゴリ更新 | `PUT /api/v1/categories/:id` |
+| メソッド | エンドポイント | 説明 |
+|---|---|---|
+| `GET` | `/api/expenses` | 支出一覧取得（自セッションのみ） |
+| `POST` | `/api/expenses` | 支出保存 |
+| `PUT` | `/api/expenses/{id}` | 支出更新 |
+| `DELETE` | `/api/expenses/{id}` | 支出削除 |
 
-### レポート（Reports）
+### ダッシュボード
 
-| タイトル | エンドポイントURL |
-|---|---|
-| 月次レポート取得 | `GET /api/v1/reports/monthly` |
-| 年次レポート取得 | `GET /api/v1/reports/yearly` |
-| カテゴリ別集計 | `GET /api/v1/reports/by_category` |
+| メソッド | エンドポイント | 説明 |
+|---|---|---|
+| `GET` | `/api/dashboard` | 月別・カテゴリ別・日別集計 + 節約提案 |
+
+### ヘルスチェック
+
+| メソッド | エンドポイント | 説明 |
+|---|---|---|
+| `GET` | `/health` | サーバー死活確認 |
 
 ---
 
@@ -89,53 +70,127 @@ AUTO_LOGIN_USER_EMAIL=dev@example.com
 
 ```
 kakeibo-demo/
-├── src/              # アプリケーションコード（PRが必要）
-│   ├── frontend/     # Next.js
-│   └── backend/      # Ruby on Rails API
-├── TASKS/            # タスク管理
-├── DEBUG/            # バグ報告
-├── CLIENT/           # クライアント要望
-├── WORK/             # 作業報告
-├── ENV/              # 環境情報
-│   ├── DEVELOPMENT.md
-│   └── PRODUCTION.md
-├── SPEC/             # 仕様書・設計図
-│   ├── api/          # API仕様書
-│   └── diagrams/     # ER図・DFD・シーケンス図等
-├── DELETE/           # ゴミ箱（手動削除待ちファイル）
-└── test/             # テストスクリプト（PR別）
+├── backend/                   # FastAPI (Python)
+│   ├── main.py                # アプリ本体・CORS・ミドルウェア
+│   ├── requirements.txt
+│   ├── routers/
+│   │   ├── receipts.py        # OCRアップロードAPI
+│   │   ├── expenses.py        # 支出CRUD API
+│   │   └── dashboard.py       # 集計API
+│   ├── services/
+│   │   ├── session.py         # セッション管理
+│   │   ├── image_processor.py # 画像検証・OpenCV前処理
+│   │   ├── ocr_engine.py      # pytesseract OCR
+│   │   ├── classifier.py      # ルールベース分類
+│   │   ├── dashboard_service.py
+│   │   └── suggester.py       # 節約提案（5ルール）
+│   ├── models/
+│   │   └── db.py              # SQLiteスキーマ・接続
+│   ├── scheduler.py           # APScheduler（JST 03:00 DBリセット）
+│   ├── tests/
+│   │   ├── test_classifier.py
+│   │   └── test_session.py
+│   └── db/
+│       └── kakeibo.sqlite3    # SQLite（.gitignore対象）
+│
+├── frontend/                  # Next.js (TypeScript)
+│   ├── pages/
+│   │   ├── _app.tsx           # FontAwesome初期化・グローバルCSS
+│   │   ├── index.tsx          # ダッシュボードページ
+│   │   └── upload.tsx         # アップロードページ
+│   ├── components/
+│   │   ├── Dashboard.tsx      # グラフ・集計表示
+│   │   ├── UploadForm.tsx     # ドラッグ&ドロップ・ハニーポット
+│   │   ├── OcrConfirm.tsx     # OCR結果確認・編集
+│   │   ├── ManualForm.tsx     # 手動入力フォーム
+│   │   └── SuggestionCard.tsx # 節約提案カード
+│   ├── lib/
+│   │   └── api.ts             # API型定義・フェッチ関数
+│   └── styles/
+│       └── globals.css
+│
+├── SPEC/                      # 仕様書・設計図
+├── TASKS/                     # タスク管理
+├── DEBUG/                     # バグ報告
+├── CLIENT/                    # クライアント要望
+├── WORK/                      # 作業報告
+├── ENV/                       # 環境情報
+└── DELETE/                    # ゴミ箱（手動削除待ち）
 ```
 
 ---
 
 ## セットアップ
 
+### バックエンド
+
 ```bash
-# リポジトリクローン
-git clone <repo-url>
-cd kakeibo-demo
+cd backend
 
-# 環境変数設定
-cp .env.example .env
-# .env を編集
+# 仮想環境（任意）
+python3 -m venv .venv
+source .venv/bin/activate
 
-# フロントエンド
-cd src/frontend
+# 依存パッケージインストール
+pip install -r requirements.txt
+
+# Tesseractのインストール（OS別）
+# macOS: brew install tesseract tesseract-lang
+# Ubuntu: sudo apt install tesseract-ocr tesseract-ocr-jpn
+
+# 起動
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
+```
+
+### フロントエンド
+
+```bash
+cd frontend
 npm install
 npm run dev
-
-# バックエンド
-cd src/backend
-bundle install
-rails db:create db:migrate db:seed
-rails s
+# → http://localhost:3000
 ```
+
+### 環境変数
+
+```bash
+# .env（プロジェクトルート）
+DATABASE_URL=backend/db/kakeibo.sqlite3
+NEXT_PUBLIC_API_URL=http://localhost:8000
+
+# 本番環境追加設定
+ENV=production           # Cookieをsecure=Trueにする
+FRONTEND_URL=https://...  # CORS許可オリジン
+```
+
+---
+
+## テスト
+
+```bash
+# バックエンド（pytest）
+cd backend
+python3 -m pytest tests/ -v
+
+# フロントエンド
+cd frontend
+npm test
+```
+
+---
+
+## デプロイ
+
+| 対象 | プラットフォーム | 備考 |
+|---|---|---|
+| フロントエンド | Vercel（無料） | `frontend/` をルートに設定 |
+| バックエンド | Render / Railway（無料） | `uvicorn main:app` |
 
 ---
 
 ## 開発ガイドライン
 
 - TDD厳守: plan > red test > coding > green test
-- mainブランチへの `src/*` 変更は PR が必須
+- `backend/` `frontend/` の変更は PR が必須
 - commit前に security review を実施
 - 詳細は [CLAUDE.md](./CLAUDE.md) を参照
