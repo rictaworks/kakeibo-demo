@@ -1,90 +1,52 @@
-# API仕様 - 認証 (Auth)
+# API仕様 - セッション管理 (Session)
 
-Base URL: `/api/v1`
+> **注意**: このファイルは旧認証仕様（Google OAuth）から変更されました。
+> kakeibo-demo はデモ版のため認証なし。セッションはCookieで自動管理します。
+
+Base URL: `http://localhost:8000`
 
 ---
 
-## GET /auth/google
+## セッション方式
 
-Google OAuth 認可 URL を返す。
+| 項目 | 内容 |
+|---|---|
+| 識別方式 | UUID v4 → SHA-256ハッシュ化してDBに保存 |
+| Cookie名 | `session_id` |
+| 有効期限 | 24時間 |
+| Cookie属性 | `HttpOnly=true`, `SameSite=Lax`, `Secure=true`（本番のみ） |
+| 個人情報 | 氏名・メール等は収集しない |
 
-**レスポンス**
+---
 
-```json
-{
-  "url": "https://accounts.google.com/o/oauth2/auth?..."
-}
+## 自動セッション生成
+
+全エンドポイントで Cookie が存在しない場合、サーバーが自動的にセッションを生成して Cookie をセットする。
+クライアントは明示的なログイン操作不要。
+
+**フロント側の設定**
+
+```typescript
+// 全リクエストに credentials: 'include' を設定すること
+fetch('/api/...', { credentials: 'include' })
 ```
 
 ---
 
-## GET /auth/google/callback
+## セッション有効性
 
-Google OAuth コールバック。JWT を発行してフロントへリダイレクト。
+セッションは以下の場合に無効化される:
 
-**クエリパラメータ**
+- 有効期限（24時間）超過
+- 毎日 JST 03:00 の DBリセット（全セッション削除）
 
-| 名前 | 型 | 必須 | 説明 |
-|---|---|---|---|
-| code | string | yes | Google 認可コード |
-| state | string | yes | CSRF 防止トークン |
-
-**レスポンス（成功時）**
-
-フロントエンドにリダイレクト。Cookie に JWT をセット。
-
-**エラー**
-
-| コード | 説明 |
-|---|---|
-| 401 | 認証失敗 |
-| 500 | サーバーエラー |
+DBリセット後は新しいセッションが自動生成される。
 
 ---
 
-## DELETE /auth/sessions
+## エラーレスポンス
 
-ログアウト。JWT Cookie を無効化する。
-
-**ヘッダー**
-
-| 名前 | 値 |
+| ステータス | 説明 |
 |---|---|
-| Authorization | Bearer {JWT} |
-
-**レスポンス**
-
-```json
-{
-  "message": "ログアウトしました"
-}
-```
-
----
-
-## GET /auth/me
-
-ログイン中ユーザー情報を取得する。
-
-**ヘッダー**
-
-| 名前 | 値 |
-|---|---|
-| Authorization | Bearer {JWT} |
-
-**レスポンス**
-
-```json
-{
-  "id": 1,
-  "email": "user@example.com",
-  "name": "田中 太郎",
-  "locale": "ja"
-}
-```
-
-**エラー**
-
-| コード | 説明 |
-|---|---|
-| 401 | 未認証 |
+| `401` | セッションが無効または期限切れ（自動再生成される） |
+| `503` | DBリセット中（`resetting.lock` 存在時） |
