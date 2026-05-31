@@ -45,14 +45,22 @@ export default function UploadPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-3">
-        <button
-          onClick={() => router.push('/')}
-          className="text-gray-500 hover:text-gray-700 p-1 transition-colors"
+      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => router.push('/')}
+            className="text-gray-500 hover:text-gray-700 p-1 transition-colors"
+          >
+            <FontAwesomeIcon icon={faArrowLeft} />
+          </button>
+          <h1 className="text-base font-semibold text-gray-800">レシートを追加</h1>
+        </div>
+        <a
+          href="https://rictaworks.jp/#demos"
+          className="text-sm text-gray-500 hover:text-gray-700 border-l border-gray-300 pl-4"
         >
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-        <h1 className="text-base font-semibold text-gray-800">レシートを追加</h1>
+          ← デモ一覧へ
+        </a>
       </header>
 
       <main className="max-w-md mx-auto px-4 py-6 space-y-4">

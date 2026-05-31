@@ -88,13 +88,21 @@ export default function IndexPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
         <h1 className="text-lg font-bold text-blue-600">かけいぼ</h1>
-        <Link
-          href="/upload"
-          className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <FontAwesomeIcon icon={faPlus} />
-          レシートを追加
-        </Link>
+        <div className="flex items-center gap-4">
+          <a
+            href="https://rictaworks.jp/#demos"
+            className="text-sm text-gray-500 hover:text-gray-700 border-l border-gray-300 pl-4"
+          >
+            ← デモ一覧へ
+          </a>
+          <Link
+            href="/upload"
+            className="flex items-center gap-2 bg-blue-600 text-white text-sm px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <FontAwesomeIcon icon={faPlus} />
+            レシートを追加
+          </Link>
+        </div>
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
