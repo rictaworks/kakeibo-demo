@@ -38,7 +38,7 @@ class SessionManager:
             key=SESSION_COOKIE_NAME,
             value=raw_id,
             httponly=True,
-            samesite="lax",
+            samesite="none",
             secure=SESSION_COOKIE_SECURE,
             max_age=SESSION_COOKIE_MAX_AGE,
         )
@@ -62,7 +62,7 @@ class SessionManager:
 
         if row is None:
             logger.warning("WARN: Session not found in DB (hashed_id=%s)", hashed_id[:8] + "...")
-            raise HTTPException(status_code=401, detail="セッションが無効です")
+            raise HTTPException(status_code=401, detail="セッシメンが無効です")
 
         expires_at_str: str = row["expires_at"]
         expires_at = datetime.fromisoformat(expires_at_str)
