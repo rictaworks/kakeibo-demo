@@ -1,0 +1,10 @@
+fastapi==0.115.12
+uvicorn[standard]==0.34.3
+python-multipart==0.0.20
+pytesseract==0.3.13
+opencv-python-headless==4.10.0.84
+Pillow==11.2.1
+APScheduler==3.11.0
+python-dotenv==1.1.0
+pytest==8.3.5
+httpx==0.28.1
