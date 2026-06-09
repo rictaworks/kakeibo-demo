@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app'
+import Head from 'next/head'
 import Script from 'next/script'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
@@ -19,6 +20,10 @@ library.add(
 export default function App({ Component, pageProps }: AppProps) {
   return (
     <>
+      <Head>
+        <title>かけいぼデモ</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+      </Head>
       <Script src="https://www.googletagmanager.com/gtag/js?id=G-C04W1XKS16" strategy="afterInteractive" />
       <Script id="ga-init" strategy="afterInteractive">{`
         window.dataLayer = window.dataLayer || [];
