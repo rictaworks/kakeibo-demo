@@ -1,4 +1,5 @@
 import type { AppProps } from 'next/app'
+import Script from 'next/script'
 import { library } from '@fortawesome/fontawesome-svg-core'
 import {
   faBasketShopping, faUtensils, faTrain, faHeartPulse, faShirt,
@@ -16,5 +17,16 @@ library.add(
 )
 
 export default function App({ Component, pageProps }: AppProps) {
-  return <Component {...pageProps} />
+  return (
+    <>
+      <Script src="https://www.googletagmanager.com/gtag/js?id=G-C04W1XKS16" strategy="afterInteractive" />
+      <Script id="ga-init" strategy="afterInteractive">{`
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-C04W1XKS16');
+      `}</Script>
+      <Component {...pageProps} />
+    </>
+  )
 }
