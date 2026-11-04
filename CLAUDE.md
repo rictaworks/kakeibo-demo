@@ -102,8 +102,8 @@
 
 ## デプロイ
 
-- フロントエンド: Vercel（無料プラン）
-- バックエンド・管理画面: Render または Railway（無料プラン）
+- フロントエンド: Cloudflare Workers Assets（Next.js の静的書き出し）
+- バックエンド: Cloudflare Workers（Hono）＋ D1。Python の OCR（OpenCV・pytesseract）は Containers に載せる（2026-11 移行。Railway は 2026-10-21 の不正アクセス公表後に停止）
 - 認証: Google ログイン
 - ドメイン: rictaworks.jp のサブドメインを原則使用
 

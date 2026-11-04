@@ -26,7 +26,13 @@ __pycache__/
 # Frontend
 frontend/.next/
 frontend/node_modules/
+frontend/out/
 frontend/.env.local
+
+# Cloudflare Workers / D1（ローカル開発の状態と変数）
+node_modules/
+.wrangler/
+.dev.vars
 
 # Common
 .env.local
