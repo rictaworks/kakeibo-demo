@@ -1,0 +1,64 @@
+{
+  // kakeibo-demo: Cloudflare Workers（API）+ Workers Assets（Next.js 静的書き出し）+ D1（SQLite）
+  // 既定の ENV は production（Cookie に Secure を付与する）。ローカル開発だけ .dev.vars で ENV=development にする
+  // （.dev.vars.example を .dev.vars にコピーする。秘密の値やコマンド行への指定は使わない）。
+  // 本番: `npm run deploy:production`（env.production の ENV=production）
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "kakeibo-demo",
+  "main": "worker/src/index.ts",
+  "account_id": "9c5183bedab008ccef3581056752fa6f",
+  "compatibility_date": "2026-09-01",
+
+  // フロントエンド（frontend/out）を Workers Assets で配信する。
+  // /api/* と /health だけ Worker を先に実行し、それ以外は静的ファイルを直接返す。
+  "assets": {
+    "directory": "./frontend/out",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*", "/health"]
+  },
+
+  // D1 の database_id は未作成のためプレースホルダ。
+  // `wrangler d1 create kakeibo_demo` で作成した ID に置き換えてから本番デプロイする。
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "kakeibo_demo",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "migrations"
+    }
+  ],
+
+  // JST 03:00 = UTC 18:00（前日）の日次リセット（SPEC/diagrams/er.md のリセット挙動）
+  "triggers": {
+    "crons": ["0 18 * * *"]
+  },
+
+  "vars": {
+    "ENV": "production"
+  },
+
+  "env": {
+    "production": {
+      "name": "kakeibo-demo",
+      "assets": {
+        "directory": "./frontend/out",
+        "binding": "ASSETS",
+        "run_worker_first": ["/api/*", "/health"]
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "kakeibo_demo",
+          "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+          "migrations_dir": "migrations"
+        }
+      ],
+      "triggers": {
+        "crons": ["0 18 * * *"]
+      },
+      "vars": {
+        "ENV": "production"
+      }
+    }
+  }
+}

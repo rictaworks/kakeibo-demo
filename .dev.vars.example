@@ -1,0 +1,3 @@
+# wrangler dev 用のローカル変数。コピーして .dev.vars を作る（.dev.vars はコミットしない）。
+# ENV は development / test / production のいずれか。本番では wrangler.jsonc の env.production が使われる。
+ENV=development
